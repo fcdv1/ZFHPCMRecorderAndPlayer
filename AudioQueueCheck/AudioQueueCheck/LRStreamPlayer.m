@@ -24,7 +24,6 @@ struct AQPlayerState {
 
 @property (nonatomic, strong) NSMutableArray *decodedPCMDatas;
 
-@property (nonatomic, assign) BOOL isPaused;
 @property (nonatomic, assign) BOOL isPlaying;
 @property (nonatomic, assign) BOOL isDataFinished;
 
@@ -88,11 +87,9 @@ static void HandleOutputBuffer (
 -(BOOL) play{
     self.isDataFinished = NO;
     
-    if (self.isPaused == NO) {
-        //need input data
-        for (int i = 0; i < kNumberBuffers; i += 1) {
-            HandleOutputBuffer((__bridge void *)self,playerState.mQueue,playerState.mBuffers[i]);
-        }
+    //need input data
+    for (int i = 0; i < kNumberBuffers; i += 1) {
+        HandleOutputBuffer((__bridge void *)self,playerState.mQueue,playerState.mBuffers[i]);
     }
     
     OSStatus status = AudioQueueStart(playerState.mQueue, NULL);
@@ -101,7 +98,6 @@ static void HandleOutputBuffer (
         return NO;
     } else {
         self.isPlaying = YES;
-        self.isPaused = NO;
         return YES;
     }
 }
@@ -157,7 +153,6 @@ static void HandleOutputBuffer (
             return NO;
         } else {
             self.isPlaying = NO;
-            self.isPaused = YES;
             return YES;
         }
     }
