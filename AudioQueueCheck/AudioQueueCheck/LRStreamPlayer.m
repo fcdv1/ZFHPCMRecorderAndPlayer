@@ -24,6 +24,7 @@ struct AQPlayerState {
 
 @property (nonatomic, strong) NSMutableArray *decodedPCMDatas;
 
+@property (nonatomic, assign) BOOL isPaused;
 @property (nonatomic, assign) BOOL isPlaying;
 @property (nonatomic, assign) BOOL isDataFinished;
 
@@ -87,9 +88,11 @@ static void HandleOutputBuffer (
 -(BOOL) play{
     self.isDataFinished = NO;
     
-    //need input data
-    for (int i = 0; i < kNumberBuffers; i += 1) {
-        HandleOutputBuffer((__bridge void *)self,playerState.mQueue,playerState.mBuffers[i]);
+    if (self.isPaused == NO) {
+        //need input data
+        for (int i = 0; i < kNumberBuffers; i += 1) {
+            HandleOutputBuffer((__bridge void *)self,playerState.mQueue,playerState.mBuffers[i]);
+        }
     }
     
     OSStatus status = AudioQueueStart(playerState.mQueue, NULL);
@@ -98,6 +101,7 @@ static void HandleOutputBuffer (
         return NO;
     } else {
         self.isPlaying = YES;
+        self.isPaused = NO;
         return YES;
     }
 }
@@ -110,6 +114,8 @@ static void HandleOutputBuffer (
         [self enQueueBufferData:pcmData inBuffer:buffer];
     } else {
         if (self.isDataFinished) {
+            // must enqueue this buffer, if not after play three time,it will no longer play again
+            [self enQueueBufferData:emptyData inBuffer:buffer];
             [self pause];
         } else {
             // If no pcm data avaliable, return a buffer with silent sound
@@ -153,6 +159,7 @@ static void HandleOutputBuffer (
             return NO;
         } else {
             self.isPlaying = NO;
+            self.isPaused = YES;
             return YES;
         }
     }
