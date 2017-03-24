@@ -36,12 +36,10 @@ void MyInputBufferHandler(	void *								inUserData,
         [recorder inputData:newPCMData numberOfPacket:dataLenth/2];
     }
     
-    if (recorder.isRecording) {
-            OSStatus errorStatus = AudioQueueEnqueueBuffer(inAQ, inBuffer, 0, NULL);
-            if (errorStatus) {
-                NSLog(@"MyInputBufferHandler error:%d", (int)errorStatus);
-                return;
-            }
+    OSStatus errorStatus = AudioQueueEnqueueBuffer(inAQ, inBuffer, 0, NULL);
+    if (errorStatus) {
+        NSLog(@"MyInputBufferHandler error:%d", (int)errorStatus);
+        return;
     }
 }
 
